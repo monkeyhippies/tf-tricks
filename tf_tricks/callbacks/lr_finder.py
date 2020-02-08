@@ -5,7 +5,7 @@ class LRFinder(Callback):
   Callback for finding ideal learning rate, inspired by https://docs.fast.ai/callbacks.lr_finder.html
   """
 
-  def __init__(self, start_lr=1e-7, end_lr=10, num_iterations=100):
+  def __init__(self, start_lr=1e-7, end_lr=1e-1, num_iterations=100):
     super(LRFinder, self).__init__()
     self.start_lr = float(start_lr)
     self.end_lr = float(end_lr)
@@ -17,7 +17,7 @@ class LRFinder(Callback):
 
   def get_lr(self, batch):
     # scale lr by multiplicative factor for each batch
-    lr = start_lr * ((end_lr / start_lr) ** (float(batch) / num_iterations))
+    lr = self.start_lr * ((self.end_lr / self.start_lr) ** (float(batch) / self.num_iterations))
     return K.get_value(lr)
 
   def on_batch_begin(self, batch, logs=None):
@@ -27,5 +27,5 @@ class LRFinder(Callback):
   def on_batch_end(self, batch, logs={}):
     self.lrs.append(K.get_value(self.model.optimizer.lr))
     self.losses.append(logs.get("loss"))
-    if batch >= num_iterations - 1:
+    if batch >= self.num_iterations - 1:
       self.model.stop_training = True

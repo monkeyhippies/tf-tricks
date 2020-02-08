@@ -39,7 +39,5 @@ class CyclicLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
         # relative is in [-1, 1], representing what phase in cycle it is, starting at -1 and ending at 1
         relative = (step - cycle * stepsize * 2 - stepsize) / stepsize
         lr = math_ops.abs(relative) * (min_lr - max_lr) + max_lr
-        lr = math_ops.maximum(0, lr)
+        lr = math_ops.maximum(math_ops.cast(0, dtype), lr)
         return lr
-
-

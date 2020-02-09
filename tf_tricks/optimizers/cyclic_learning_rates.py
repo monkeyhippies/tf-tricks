@@ -5,6 +5,14 @@ from tensorflow.python.framework import ops
 class CyclicLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
     """
     https://arxiv.org/abs/1506.01186
+
+    Example:
+    ```
+    import tensorflow.keras.optimizers.Adam as Adam
+
+    lr = CyclicLearningRate(100, 1e-3, 3e-4, triangular2=True)
+    optimizer = Adam(learning_rate=lr)
+    ```
     """
 
     def __init__(self, stepsize, max_lr, min_lr=None, triangular2=True):

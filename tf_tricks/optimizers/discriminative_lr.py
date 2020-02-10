@@ -1,4 +1,6 @@
+from tensorflow.python.ops import math_ops
 import tensorflow.keras.backend as K
+from tensorflow.python.keras.optimizer_v2 import learning_rate_schedule
 
 def with_lr_multipliers(optimizer_class):
     """
@@ -30,28 +32,42 @@ def with_lr_multipliers(optimizer_class):
             super(LRMultiplierOptimizer, self).__init__(*args, **kwargs)
         
         def _resource_apply_dense(self, grad, var, apply_state):
-            multiplier = self.lr_multipliers.get(var.name)
-            if multiplier:
-                learning_rate = self.learning_rate
-                self.learning_rate = K.get_value(learning_rate) * float(multiplier)
+            var_name = var.name.split("/")[0]
+            multiplier = self.lr_multipliers.get(var_name)
+            if multiplier is not None:
+                orig_learning_rate = self._hyper["learning_rate"]
+                if isinstance(orig_learning_rate, learning_rate_schedule.LearningRateSchedule):
+                    var_dtype = var.dtype
+                    step = math_ops.cast(self.iterations, var_dtype)
+                    learning_rate = math_ops.cast(orig_learning_rate(step), var_dtype)
+                else:
+                    learning_rate = K.get_value(orig_learning_rate)
+                self._set_hyper("learning_rate", learning_rate * float(multiplier))
                 # Dont use apply_state because it's impossible to do generic multipliers wrapper
                 # with it since there's no standard for the learning_rate keyword in apply_state
                 output = super(LRMultiplierOptimizer, self)._resource_apply_dense(grad, var, None)
-                self.learning_rate = learning_rate
+                self._hyper["learning_rate"] = orig_learning_rate
             else:
                 output = super(LRMultiplierOptimizer, self)._resource_apply_dense(grad, var, apply_state)
 
             return output
 
         def _resource_apply_sparse(self, grad, var, indices, apply_state):
-            multiplier = self.lr_multipliers.get(var.name)
-            if multiplier:
-                learning_rate = self.learning_rate
-                self.learning_rate = K.get_value(learning_rate) * float(multiplier)
+            var_name = var.name.split("/")[0]
+            multiplier = self.lr_multipliers.get(var_name)
+            if multiplier is not None:
+                orig_learning_rate = self._hyper["learning_rate"]
+                if isinstance(orig_learning_rate, learning_rate_schedule.LearningRateSchedule):
+                    var_dtype = var.dtype
+                    step = math_ops.cast(self.iterations, var_dtype)
+                    learning_rate = math_ops.cast(orig_learning_rate(step), var_dtype)
+                else:
+                    learning_rate = K.get_value(orig_learning_rate)
+                self._set_hyper("learning_rate", learning_rate * float(multiplier))
                 # Dont use apply_state because it's impossible to do generic multipliers wrapper
                 # with it since there's no standard for the learning_rate keyword in apply_state
                 output = super(LRMultiplierOptimizer, self)._resource_apply_sparse(grad, var, indices, None)
-                self.learning_rate = learning_rate
+                self._hyper["learning_rate"] = orig_learning_rate
             else:
                 output = super(LRMultiplierOptimizer, self)._resource_apply_sparse(grad, var, indices, apply_state)
     

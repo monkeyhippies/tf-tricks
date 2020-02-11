@@ -17,17 +17,10 @@ class StemBlock(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         self.conv_1 = tf.keras.layers.Conv2D(filters=self.output_filters, kernel_size=(7, 7), strides=(2, 2), padding=self.padding)
-
-        self.bn_1 = tf.keras.layers.BatchNormalization(momentum=self.bn_momentum)
-
-        self.activation_1 = tf.keras.layers.ReLU()
-
         self.max_pool = tf.keras.layers.MaxPool2D(pool_size=(3, 3), strides=(2, 2), padding=self.padding)
 
     def call(self, input):
         output = self.conv_1(input)
-        output = self.bn_1(output)
-        output = self.activation_1(output)
         output = self.max_pool(output)
 
         return output
@@ -106,7 +99,7 @@ class DownsamplingBlock(tf.keras.layers.Layer):
         self.activation_2 = tf.keras.layers.ReLU()
         self.activation_3 = tf.keras.layers.ReLU()
 
-        self.skip_pooling = tf.keras.layers.MaxPooling2D(pool_size=(1, 1), strides=(2, 2))
+        self.skip_pooling = tf.keras.layers.MaxPooling2D(pool_size=(1, 1), strides=(2, 2), padding=self.padding)
 
     def call(self, input):
         output = self.bn_1(input)

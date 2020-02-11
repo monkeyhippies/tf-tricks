@@ -35,6 +35,9 @@ class StemBlock(tf.keras.layers.Layer):
 class ResidualBlock(tf.keras.layers.Layer):
 
     def __init__(self, output_filters, bn_momentum=.99, padding="same"):
+        """
+        NOTE: number of input filters must equal output_filters
+        """
         self.bn_momentum = bn_momentum
         self.output_filters = output_filters
         self.padding = padding

@@ -8,7 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 secrets/
-data/
+/data
 models/
 results/
 pretrained-embeddings/
